@@ -6,8 +6,13 @@
 
 #include "Process.h"
 
-void sjfPreemptive(Process processes[], int n)
+void sjfPreemptive(Process inputProcesses[], const int n)
 {
+	Process *processes = new Process[n];
+	for (int i = 0; i < n; i++)
+	{
+		processes[i] = inputProcesses[i];
+	}
 	std::sort(processes, processes + n, ProcessComparator::sortSjfPreemptiveComparator);
 	std::set<int> arrivalTimes;
 	for (int i = 0; i < n; i++)
@@ -82,7 +87,7 @@ void sjfPreemptive(Process processes[], int n)
 int main()
 {
 	const int n = 4;
-	Process p[] = { Process(1,0,8), Process(2,1,4), Process(3,2,9), Process(4,3,5) };
+	Process p[] = { Process(2,1,4), Process(1,0,8),  Process(3,2,9), Process(4,3,5) };
 	sjfPreemptive(p, n);
 	return 0;
 }

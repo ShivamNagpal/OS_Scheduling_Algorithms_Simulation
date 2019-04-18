@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{F55CDCFA-54FF-47D6-853F-345002199A44}</ProjectGuid>
-    <RootNamespace>CGProject</RootNamespace>
+    <ProjectGuid>{3791D31D-CC5E-4BCE-9110-197F563E169B}</ProjectGuid>
+    <RootNamespace>OSSchedulingAlgorithmSimulation</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -115,7 +115,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Process.h" />
+    <ClInclude Include="Process.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="Scheduling Algorithms.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
