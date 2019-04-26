@@ -84,10 +84,10 @@ void sjfPreemptive(Process inputProcesses[], const int n)
 	std::cout << "Current Time: " << currentTime << std::endl;
 }
 
-int main()
-{
-	const int n = 4;
-	Process p[] = { Process(2,1,4), Process(1,0,8),  Process(3,2,9), Process(4,3,5) };
-	sjfPreemptive(p, n);
-	return 0;
-}
+//int main()
+//{
+//	const int n = 4;
+//	Process p[] = { Process(2,1,4), Process(1,0,8),  Process(3,2,9), Process(4,3,5) };
+//	sjfPreemptive(p, n);
+//	return 0;
+//}
