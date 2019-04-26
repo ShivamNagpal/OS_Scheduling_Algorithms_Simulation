@@ -1,7 +1,11 @@
+#include "SchedulingAlgorithms.h"
+#include "Scheduling_Output.h"
 #include "VisualSection.h"
+#include "Process.h"
 #include <algorithm>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sstream>
 #include <thread>
 #include <glut.h>
 
@@ -9,12 +13,12 @@ const int HEIGHT = 720, WIDTH = 1280;
 const int rows = 3;
 int columns[] = { 1,2,2 };
 VisualSection *visualSections[rows][2];
-volatile bool isReady = false;
 
 void drawLabels();
 void drawPartitions();
 void init();
 void idleFunction();
+void renderCurrentOutput();
 void displayVisualSectionsAttribute();
 
 void init()
@@ -47,6 +51,7 @@ void display()
 
 	drawPartitions();
 	drawLabels();
+	renderCurrentOutput();
 	glutSwapBuffers();
 }
 
@@ -104,8 +109,8 @@ void bitmapTextRendering(const char * text, int x, int y)
 {
 	glPushAttrib(GL_COLOR);
 	glColor3f(1.0, 0.0, 0.0);
-	glRasterPos2f(x+10, y-34);
-	
+	glRasterPos2f(x + 10, y - 34);
+
 	for (int i = 0; text[i] != '\0'; i++)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]);
@@ -123,6 +128,18 @@ void drawLabels()
 	bitmapTextRendering("Gantt Chart", visualSections[0][0]->startX, visualSections[0][0]->startY + visualSections[0][0]->height);
 }
 
+void renderCurrentOutput()
+{
+	while (!outputReady)
+		;
+	outputReady = false;
+	std::stringstream ss;
+	ss << schedulingOutput->processNumber;
+	printf("%d %s\n", schedulingOutput->processNumber, ss.str().c_str());
+	bitmapTextRendering(ss.str().c_str(), 400, 600);
+	outputTaken = true;
+}
+
 int main()
 {
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
@@ -131,7 +148,17 @@ int main()
 	init();
 	glutDisplayFunc(display);
 	glutIdleFunc(idleFunction);
+
+	const int n = 4;
+	Process p[] = { Process(2,1,4), Process(1,0,8),  Process(3,2,9), Process(4,3,5) };
+	std::thread th1(sjfPreemptive, p, n);
+	printf("Did I reach\n");
 	glutMainLoop();
+	th1.join();
+
+	/*const int n = 4;
+	Process p[] = { Process(2,1,4), Process(1,0,8),  Process(3,2,9), Process(4,3,5) };
+	sjfPreemptive(p, 4);*/
 }
 
 void idleFunction()

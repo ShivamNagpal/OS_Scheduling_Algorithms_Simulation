@@ -5,8 +5,12 @@
 #include <set>
 
 #include "Process.h"
+#include "Scheduling_Output.h"
 
-void sjfPreemptive(Process inputProcesses[], const int n)
+#ifndef SCHEDULING_ALGORITHM_H_
+#define SCHEDULING_ALGORITHM_H_
+
+static void sjfPreemptive(Process inputProcesses[], const int n)
 {
 	Process *processes = new Process[n];
 	for (int i = 0; i < n; i++)
@@ -65,6 +69,8 @@ void sjfPreemptive(Process inputProcesses[], const int n)
 			minProcess->remainingTime -= 1;
 
 			std::cout << "Current Time: " << currentTime << ", Process: " << minProcess->processId << std::endl;
+			
+			schedulingOutput = new SchedulingOutput(currentTime, minProcess->processId, 0, 0);
 
 			if (minProcess->remainingTime <= 0)
 			{
@@ -72,22 +78,36 @@ void sjfPreemptive(Process inputProcesses[], const int n)
 				checkForNextMinProcess = true;
 				minProcess = NULL;
 			}
+
+			for (std::list<Process>::iterator iterator = arrivedProcesses.begin(); iterator != arrivedProcesses.end(); ++iterator)
+			{
+				(schedulingOutput->arrivedProcesses)->push_back(iterator->processId);
+			}
+			isReady = true;
+			outputReady = true;
+			outputTaken = false;
+
 		}
+		printf("I'm Waiting\n");
+		for (long i = 0; i < 750000000; i++)
+			;
+
+		while (!outputTaken)
+			;
+
 
 		currentTime += 1;
 
+
 		if (arrivedProcesses.size() == 0 && currentTime > processes[n - 1].arrivalTime)
 		{
+			printf("I'm Exiting\n");
 			break;
 		}
 	}
 	std::cout << "Current Time: " << currentTime << std::endl;
+	for (long i = 0; i < 750000000; i++)
+		;
 }
 
-//int main()
-//{
-//	const int n = 4;
-//	Process p[] = { Process(2,1,4), Process(1,0,8),  Process(3,2,9), Process(4,3,5) };
-//	sjfPreemptive(p, n);
-//	return 0;
-//}
+#endif // !SCHEDULING_ALGORITHM_H_

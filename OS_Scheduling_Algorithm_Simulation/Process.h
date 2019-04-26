@@ -1,3 +1,5 @@
+#ifndef PROCESS_H_
+#define PROCESS_H_
 struct Process
 {
 	int processId, arrivalTime, burstTime, remainingTime, waitingTime;
@@ -31,3 +33,5 @@ namespace ProcessComparator
 		return p1.arrivalTime <= p2.arrivalTime;
 	}
 }
+#endif // !PROCESS_H_
+

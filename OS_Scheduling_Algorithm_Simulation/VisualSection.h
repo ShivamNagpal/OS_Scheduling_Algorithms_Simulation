@@ -1,3 +1,6 @@
+#ifndef VISUAL_SECTION_H_
+#define VISUAL_SECTION_H_
+
 struct VisualSection
 {
 	int startX, startY;
@@ -11,3 +14,4 @@ struct VisualSection
 		this->height = height;
 	}
 };
+#endif // !VISUAL_SECTION_H_
