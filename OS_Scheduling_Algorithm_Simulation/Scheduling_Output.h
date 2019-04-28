@@ -11,11 +11,6 @@ struct SchedulingOutput
 
 	SchedulingOutput(int currentTime, int processNumber, float averageWaitingTime, float averageTurnAroundTime)
 	{
-		if (arrivedProcesses != NULL)
-		{
-			delete arrivedProcesses;
-		}
-
 		this->currentTime = currentTime;
 		this->processNumber = processNumber;
 		this->averageWaitingTime = averageWaitingTime;
@@ -29,4 +24,16 @@ static volatile bool isReady = false;
 static volatile bool outputReady = false;
 static volatile bool outputTaken = true;
 static volatile bool isOver = false;
+
+static void clearSchedulingOutput()
+{
+	if (schedulingOutput != NULL)
+	{
+		if (schedulingOutput->arrivedProcesses != NULL)
+		{
+			delete schedulingOutput->arrivedProcesses;
+		}
+		delete schedulingOutput;
+	}
+}
 #endif // !SCHEDULING_OUTPUT_H_

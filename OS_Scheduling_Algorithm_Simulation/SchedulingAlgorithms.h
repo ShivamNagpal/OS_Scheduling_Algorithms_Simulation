@@ -32,10 +32,7 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 
 	while (true)
 	{
-		if (schedulingOutput != NULL)
-		{
-			delete schedulingOutput;
-		}
+		clearSchedulingOutput();
 
 		if (arrivalTimes.find(currentTime) != arrivalTimes.end())
 		{

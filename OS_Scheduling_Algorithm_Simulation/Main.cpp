@@ -20,6 +20,19 @@ float outputLabelColor[] = { 0.0,0.0,0.0 };
 void *outputLabelFont = GLUT_BITMAP_TIMES_ROMAN_10;
 float outputColor[] = { 0.0,0.0,0.0 };
 void *outputFont = GLUT_BITMAP_TIMES_ROMAN_24;
+float processColors[][3] = { { 1,0,0 },{ 0,1,0 },{ 0,0,1 },{ 0.75,0.75,0 },{ 0,1,1 },{ 1,0,1 },{ 0.5,0.5,0.5 },{ 0.75,0.25,1 } };
+
+float PROCESS_REPRESENTATION_TEXT_COLOR[] = { 1.0,1.0,1.0 };
+
+int representRectangleX = 0, representRectangleY = 0;
+const int REPRESENT_RECTANGLE_SEPARATION = 20;
+const int REPRESENT_RECTANGLE_HEIGHT = 100;
+const int REPRESENT_RECTANGLE_WIDTH = 50;
+
+std::list<int> ganttChart;
+
+int skipReadyQueueElements = 0;
+int skipGanttChartElements = 0;
 
 void drawVisualSectionLabels();
 void drawOutputLabels();
@@ -28,9 +41,13 @@ void drawAverageOutputLabels();
 void drawPartitions();
 void init();
 void idleFunction();
+void representProcess(int processNumber, float color[]);
+void setStartingPositionForProcessRepresentation(int x, int y);
 void renderCurrentOutput();
 void renderCurrentCPUOutput(int process, int currentTime);
 void renderCurrentAverageOutput(float waitingAverage, float turnAroundTimeAverage);
+void renderReadyQueue(std::list<int> *arrivedProcesses);
+void renderGanttChart();
 void displayVisualSectionsAttribute();
 void cleanUpMemory();
 void cleanUpVisualSections();
@@ -179,11 +196,12 @@ void renderCurrentOutput()
 		while (!outputReady)
 			;
 		outputReady = false;
-
+		ganttChart.push_back(schedulingOutput->processNumber);
 		renderCurrentCPUOutput(schedulingOutput->processNumber, schedulingOutput->currentTime);
+		renderReadyQueue(schedulingOutput->arrivedProcesses);
 	}
-
 	renderCurrentAverageOutput(schedulingOutput->averageWaitingTime, schedulingOutput->averageTurnAroundTime);
+	renderGanttChart();
 
 	outputTaken = true;
 }
@@ -218,6 +236,68 @@ void renderCurrentAverageOutput(float waitingAverage, float turnAroundTimeAverag
 	xCurrent += xShift;
 	ss << std::fixed << turnAroundTimeAverage;
 	bitmapTextRendering(ss.str().c_str(), outputFont, outputColor, xCurrent, y);
+}
+
+void renderReadyQueue(std::list<int> *arrivedProcesses)
+{
+	setStartingPositionForProcessRepresentation(visualSections[2][0]->startX, visualSections[2][0]->startY + (visualSections[2][0]->height - 34) / 2);
+
+	for (std::list<int>::iterator iterator = arrivedProcesses->begin(); iterator != arrivedProcesses->end(); iterator++)
+	{
+		representProcess(*iterator, processColors[(*iterator - 1) % 8]);
+	}
+}
+
+void renderGanttChart()
+{
+	setStartingPositionForProcessRepresentation(visualSections[0][0]->startX, visualSections[0][0]->startY + (visualSections[0][0]->height - 34) / 2);
+
+	for (std::list<int>::iterator iterator = ganttChart.begin(); iterator != ganttChart.end(); iterator++)
+	{
+		representProcess(*iterator, processColors[(*iterator - 1) % 8]);
+	}
+}
+
+void setStartingPositionForProcessRepresentation(int x, int y)
+{
+	representRectangleX = x;
+	representRectangleY = y;
+}
+
+void representProcess(int processNumber, float color[])
+{
+	glPushAttrib(GL_LINE_WIDTH);
+	glPushAttrib(GL_COLOR);
+
+	glLineWidth(2.0);
+	glColor3f(0, 0, 0);
+	glBegin(GL_LINES);
+	glVertex2f(representRectangleX, representRectangleY);
+	glVertex2f(representRectangleX + REPRESENT_RECTANGLE_SEPARATION, representRectangleY);
+	glEnd();
+
+	representRectangleX += REPRESENT_RECTANGLE_SEPARATION;
+
+	int deltaY = REPRESENT_RECTANGLE_HEIGHT / 2;
+	glColor3fv(color);
+	glBegin(GL_POLYGON);
+	glVertex2f(representRectangleX, representRectangleY - deltaY);
+	glVertex2f(representRectangleX, representRectangleY + deltaY);
+	glVertex2f(representRectangleX + REPRESENT_RECTANGLE_WIDTH, representRectangleY + deltaY);
+	glVertex2f(representRectangleX + REPRESENT_RECTANGLE_WIDTH, representRectangleY - deltaY);
+	glEnd();
+
+	glColor3f(0, 0, 0);
+	glRasterPos2f(representRectangleX + 10, representRectangleY);
+	std::stringstream ss;
+	ss << processNumber;
+	std::string s;
+	ss >> s;
+	bitmapTextRendering(s.c_str(), GLUT_BITMAP_TIMES_ROMAN_24, PROCESS_REPRESENTATION_TEXT_COLOR, representRectangleX + 10, representRectangleY);
+
+	representRectangleX += REPRESENT_RECTANGLE_WIDTH;
+	glPopAttrib();
+	glPopAttrib();
 }
 
 int main()
@@ -260,16 +340,8 @@ void cleanUpVisualSections()
 	}
 }
 
-void cleanCurrentOutput()
-{
-	if (schedulingOutput != NULL)
-	{
-		delete schedulingOutput;
-	}
-}
-
 void cleanUpMemory()
 {
 	cleanUpVisualSections();
-	cleanCurrentOutput();
+	clearSchedulingOutput();
 }
