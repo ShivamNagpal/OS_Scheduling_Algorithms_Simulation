@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include <sstream>
 #include <thread>
 #include <glut.h>
@@ -27,7 +28,7 @@ void drawPartitions();
 void init();
 void idleFunction();
 void renderCurrentOutput();
-void renderCurrentCPUOutput();
+void renderCurrentCPUOutput(int process, int currentTime);
 void displayVisualSectionsAttribute();
 void cleanUpMemory();
 void cleanUpVisualSections();
@@ -148,13 +149,14 @@ void drawOutputLabels()
 
 void drawCPUOutputLabels()
 {
+	int y = visualSections[1][0]->startY + visualSections[1][0]->height - 34;
 	int xShift = visualSections[1][0]->width / 3;
 	int xCurrent = visualSections[1][0]->startX + 10;
-	bitmapTextRendering("Current Job", outputLabelFont, outputLabelColor, xCurrent, visualSections[1][0]->startY + visualSections[1][0]->height - 34);
+	bitmapTextRendering("Current Job", outputLabelFont, outputLabelColor, xCurrent, y);
 	xCurrent += xShift;
-	bitmapTextRendering("Current Time", outputLabelFont, outputLabelColor, xCurrent, visualSections[1][0]->startY + visualSections[1][0]->height - 34);
+	bitmapTextRendering("Current Time", outputLabelFont, outputLabelColor, xCurrent, y);
 	xCurrent += xShift;
-	bitmapTextRendering("Utilization", outputLabelFont, outputLabelColor, xCurrent, visualSections[1][0]->startY + visualSections[1][0]->height - 34);
+	bitmapTextRendering("Utilization", outputLabelFont, outputLabelColor, xCurrent, y);
 }
 
 void renderCurrentOutput()
@@ -166,16 +168,25 @@ void renderCurrentOutput()
 			;
 		outputReady = false;
 	}
-	std::stringstream ss;
-	ss << schedulingOutput->processNumber;
-	printf("%d %s\n", schedulingOutput->processNumber, ss.str().c_str());
-	bitmapTextRendering(ss.str().c_str(), GLUT_BITMAP_TIMES_ROMAN_24, color, 200, 200);
+
+	renderCurrentCPUOutput(schedulingOutput->processNumber, schedulingOutput->currentTime);
+
 	outputTaken = true;
 }
 
-void renderCurrentCPUOutput()
+void renderCurrentCPUOutput(int process, int currentTime)
 {
+	int xShift = visualSections[1][0]->width / 3;
+	int xCurrent = visualSections[1][0]->startX + 10;
+	int y = visualSections[1][0]->startY + visualSections[1][0]->height - 68;
+	std::stringstream ss;
+	ss << "Job " << process;
+	bitmapTextRendering(ss.str().c_str(), outputFont, outputColor, xCurrent, y);
+	ss.str("");
 
+	xCurrent += xShift;
+	ss << currentTime << " -> " << (currentTime + 1);
+	bitmapTextRendering(ss.str().c_str(), outputFont, outputColor, xCurrent, y);
 }
 
 int main()
