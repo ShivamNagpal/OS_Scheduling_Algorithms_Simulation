@@ -9,16 +9,25 @@
 #include <thread>
 #include <glut.h>
 
-const int HEIGHT = 720, WIDTH = 1280;
+const int HEIGHT = 500, WIDTH = 1000;
 const int rows = 3;
 int columns[] = { 1,2,2 };
 VisualSection *visualSections[rows][2];
+float visualSectionLabelColor[] = { 1.0,0.0,0.0 };
+void *visualSectionLabelFont = GLUT_BITMAP_TIMES_ROMAN_24;
+float outputLabelColor[] = { 0.0,0.0,0.0 };
+void *outputLabelFont = GLUT_BITMAP_TIMES_ROMAN_10;
+float outputColor[] = { 0.0,0.0,0.0 };
+void *outputFont = GLUT_BITMAP_TIMES_ROMAN_24;
 
-void drawLabels();
+void drawVisualSectionLabels();
+void drawOutputLabels();
+void drawCPUOutputLabels();
 void drawPartitions();
 void init();
 void idleFunction();
 void renderCurrentOutput();
+void renderCurrentCPUOutput();
 void displayVisualSectionsAttribute();
 void cleanUpMemory();
 void cleanUpVisualSections();
@@ -52,7 +61,8 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	drawPartitions();
-	drawLabels();
+	drawVisualSectionLabels();
+	drawOutputLabels();
 	renderCurrentOutput();
 	glutSwapBuffers();
 }
@@ -107,7 +117,7 @@ void drawPartitions()
 	glPopAttrib();
 }
 
-void bitmap24TextRendering(const char * text, float color[], int x, int y)
+void bitmapTextRendering(const char * text, void *font, float color[], int x, int y)
 {
 	glPushAttrib(GL_COLOR);
 	glColor3fv(color);
@@ -115,33 +125,57 @@ void bitmap24TextRendering(const char * text, float color[], int x, int y)
 
 	for (int i = 0; text[i] != '\0'; i++)
 	{
-		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]);
+		glutBitmapCharacter(font, text[i]);
 	}
 
 	glPopAttrib();
 }
 
-void drawLabels()
+void drawVisualSectionLabels()
 {
-	float color[] = { 1.0,0.0,0.0 };
-	bitmap24TextRendering("Ready Queue", color, visualSections[2][0]->startX, visualSections[2][0]->startY + visualSections[2][0]->height);
-	bitmap24TextRendering("Job Pool", color, visualSections[2][1]->startX, visualSections[2][1]->startY + visualSections[2][1]->height);
-	bitmap24TextRendering("CPU", color, visualSections[1][0]->startX, visualSections[1][0]->startY + visualSections[1][0]->height);
-	bitmap24TextRendering("Average", color, visualSections[1][1]->startX, visualSections[1][1]->startY + visualSections[1][1]->height);
-	bitmap24TextRendering("Gantt Chart", color, visualSections[0][0]->startX, visualSections[0][0]->startY + visualSections[0][0]->height);
+	bitmapTextRendering("Ready Queue", visualSectionLabelFont, visualSectionLabelColor, visualSections[2][0]->startX, visualSections[2][0]->startY + visualSections[2][0]->height);
+	bitmapTextRendering("Job Pool", visualSectionLabelFont, visualSectionLabelColor, visualSections[2][1]->startX, visualSections[2][1]->startY + visualSections[2][1]->height);
+	bitmapTextRendering("CPU", visualSectionLabelFont, visualSectionLabelColor, visualSections[1][0]->startX, visualSections[1][0]->startY + visualSections[1][0]->height);
+	bitmapTextRendering("Average", visualSectionLabelFont, visualSectionLabelColor, visualSections[1][1]->startX, visualSections[1][1]->startY + visualSections[1][1]->height);
+	bitmapTextRendering("Gantt Chart", visualSectionLabelFont, visualSectionLabelColor, visualSections[0][0]->startX, visualSections[0][0]->startY + visualSections[0][0]->height);
+}
+
+void drawOutputLabels()
+{
+	drawCPUOutputLabels();
+
+}
+
+void drawCPUOutputLabels()
+{
+	int xShift = visualSections[1][0]->width / 3;
+	int xCurrent = visualSections[1][0]->startX + 10;
+	bitmapTextRendering("Current Job", outputLabelFont, outputLabelColor, xCurrent, visualSections[1][0]->startY + visualSections[1][0]->height - 34);
+	xCurrent += xShift;
+	bitmapTextRendering("Current Time", outputLabelFont, outputLabelColor, xCurrent, visualSections[1][0]->startY + visualSections[1][0]->height - 34);
+	xCurrent += xShift;
+	bitmapTextRendering("Utilization", outputLabelFont, outputLabelColor, xCurrent, visualSections[1][0]->startY + visualSections[1][0]->height - 34);
 }
 
 void renderCurrentOutput()
 {
 	float color[] = { 0.0,0.0,0.0 };
-	while (!outputReady)
-		;
-	outputReady = false;
+	if (!isOver)
+	{
+		while (!outputReady)
+			;
+		outputReady = false;
+	}
 	std::stringstream ss;
 	ss << schedulingOutput->processNumber;
 	printf("%d %s\n", schedulingOutput->processNumber, ss.str().c_str());
-	bitmap24TextRendering(ss.str().c_str(), color, 400, 600);
+	bitmapTextRendering(ss.str().c_str(), GLUT_BITMAP_TIMES_ROMAN_24, color, 200, 200);
 	outputTaken = true;
+}
+
+void renderCurrentCPUOutput()
+{
+
 }
 
 int main()
@@ -159,6 +193,7 @@ int main()
 	printf("Did I reach\n");
 	glutMainLoop();
 	th1.join();
+	isOver = true;
 
 	cleanUpMemory();
 }
@@ -183,7 +218,16 @@ void cleanUpVisualSections()
 	}
 }
 
+void cleanCurrentOutput()
+{
+	if (schedulingOutput != NULL)
+	{
+		delete schedulingOutput;
+	}
+}
+
 void cleanUpMemory()
 {
 	cleanUpVisualSections();
+	cleanCurrentOutput();
 }

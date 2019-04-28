@@ -28,4 +28,5 @@ static SchedulingOutput *schedulingOutput = NULL;
 static volatile bool isReady = false;
 static volatile bool outputReady = false;
 static volatile bool outputTaken = true;
+static volatile bool isOver = false;
 #endif // !SCHEDULING_OUTPUT_H_

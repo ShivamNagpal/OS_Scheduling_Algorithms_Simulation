@@ -31,6 +31,11 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 
 	while (true)
 	{
+		if (schedulingOutput != NULL)
+		{
+			delete schedulingOutput;
+		}
+
 		if (arrivalTimes.find(currentTime) != arrivalTimes.end())
 		{
 			while (processCursor < n && processes[processCursor].arrivalTime <= currentTime)
@@ -70,10 +75,6 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 
 			std::cout << "Current Time: " << currentTime << ", Process: " << minProcess->processId << std::endl;
 
-			if (schedulingOutput != NULL)
-			{
-				delete schedulingOutput;
-			}
 			schedulingOutput = new SchedulingOutput(currentTime, minProcess->processId, 0, 0);
 
 			if (minProcess->remainingTime <= 0)
@@ -101,7 +102,6 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 
 
 		currentTime += 1;
-
 
 		if (arrivedProcesses.size() == 0 && currentTime > processes[n - 1].arrivalTime)
 		{
