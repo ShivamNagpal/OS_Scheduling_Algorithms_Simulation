@@ -26,6 +26,7 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 	std::list<Process> arrivedProcesses;
 
 	int processCursor = 0, currentTime = 0;
+	float averageWaitingTime = 0, averageTurnAroundTime = 0;
 	bool checkForNextMinProcess = false;
 	Process *minProcess = NULL;
 
@@ -69,13 +70,23 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 			iterator->waitingTime += 1;
 		}
 
+		averageWaitingTime = 0;
+		averageTurnAroundTime = 0;
+		for (std::list<Process>::iterator iterator = arrivedProcesses.begin(); iterator != arrivedProcesses.end(); ++iterator)
+		{
+			averageWaitingTime += iterator->waitingTime;
+			averageTurnAroundTime += iterator->waitingTime + iterator->burstTime;
+		}
+		averageWaitingTime /= n;
+		averageTurnAroundTime /= n;
+
 		if (minProcess != NULL)
 		{
 			minProcess->remainingTime -= 1;
 
 			std::cout << "Current Time: " << currentTime << ", Process: " << minProcess->processId << std::endl;
 
-			schedulingOutput = new SchedulingOutput(currentTime, minProcess->processId, 0, 0);
+			schedulingOutput = new SchedulingOutput(currentTime, minProcess->processId, averageWaitingTime, averageTurnAroundTime);
 
 			if (minProcess->remainingTime <= 0)
 			{
@@ -92,6 +103,10 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 			outputReady = true;
 			outputTaken = false;
 
+		}
+		else
+		{
+			// Return -1 for process Number;
 		}
 		printf("I'm Waiting\n");
 		for (long i = 0; i < 750000000; i++)
@@ -112,7 +127,6 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 	std::cout << "Current Time: " << currentTime << std::endl;
 	for (long i = 0; i < 750000000; i++)
 		;
-
 	delete[n] processes;
 }
 

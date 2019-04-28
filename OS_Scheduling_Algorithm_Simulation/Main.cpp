@@ -24,11 +24,13 @@ void *outputFont = GLUT_BITMAP_TIMES_ROMAN_24;
 void drawVisualSectionLabels();
 void drawOutputLabels();
 void drawCPUOutputLabels();
+void drawAverageOutputLabels();
 void drawPartitions();
 void init();
 void idleFunction();
 void renderCurrentOutput();
 void renderCurrentCPUOutput(int process, int currentTime);
+void renderCurrentAverageOutput(float waitingAverage, float turnAroundTimeAverage);
 void displayVisualSectionsAttribute();
 void cleanUpMemory();
 void cleanUpVisualSections();
@@ -144,7 +146,7 @@ void drawVisualSectionLabels()
 void drawOutputLabels()
 {
 	drawCPUOutputLabels();
-
+	drawAverageOutputLabels();
 }
 
 void drawCPUOutputLabels()
@@ -159,6 +161,16 @@ void drawCPUOutputLabels()
 	bitmapTextRendering("Utilization", outputLabelFont, outputLabelColor, xCurrent, y);
 }
 
+void drawAverageOutputLabels()
+{
+	int y = visualSections[1][1]->startY + visualSections[1][1]->height - 34;
+	int xShift = visualSections[1][1]->width / 2;
+	int xCurrent = visualSections[1][1]->startX + 10;
+	bitmapTextRendering("Average Waiting Time", outputLabelFont, outputLabelColor, xCurrent, y);
+	xCurrent += xShift;
+	bitmapTextRendering("Average Turn Around Time", outputLabelFont, outputLabelColor, xCurrent, y);
+}
+
 void renderCurrentOutput()
 {
 	float color[] = { 0.0,0.0,0.0 };
@@ -167,9 +179,11 @@ void renderCurrentOutput()
 		while (!outputReady)
 			;
 		outputReady = false;
+
+		renderCurrentCPUOutput(schedulingOutput->processNumber, schedulingOutput->currentTime);
 	}
 
-	renderCurrentCPUOutput(schedulingOutput->processNumber, schedulingOutput->currentTime);
+	renderCurrentAverageOutput(schedulingOutput->averageWaitingTime, schedulingOutput->averageTurnAroundTime);
 
 	outputTaken = true;
 }
@@ -189,6 +203,23 @@ void renderCurrentCPUOutput(int process, int currentTime)
 	bitmapTextRendering(ss.str().c_str(), outputFont, outputColor, xCurrent, y);
 }
 
+void renderCurrentAverageOutput(float waitingAverage, float turnAroundTimeAverage)
+{
+	int y = visualSections[1][1]->startY + visualSections[1][1]->height - 68;
+	int xShift = visualSections[1][1]->width / 2;
+	int xCurrent = visualSections[1][1]->startX + 10;
+
+	std::stringstream ss;
+	ss.precision(2);
+	ss << std::fixed << waitingAverage;
+	bitmapTextRendering(ss.str().c_str(), outputFont, outputColor, xCurrent, y);
+	ss.str("");
+
+	xCurrent += xShift;
+	ss << std::fixed << turnAroundTimeAverage;
+	bitmapTextRendering(ss.str().c_str(), outputFont, outputColor, xCurrent, y);
+}
+
 int main()
 {
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
@@ -203,7 +234,7 @@ int main()
 	std::thread th1(sjfPreemptive, p, n);
 	printf("Did I reach\n");
 	glutMainLoop();
-	th1.join();
+	//th1.join();
 	isOver = true;
 
 	cleanUpMemory();
