@@ -24,7 +24,7 @@ struct SchedulingOutput
 	}
 };
 
-static SchedulingOutput *schedulingOutput;
+static SchedulingOutput *schedulingOutput = NULL;
 static volatile bool isReady = false;
 static volatile bool outputReady = false;
 static volatile bool outputTaken = true;

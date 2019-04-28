@@ -69,7 +69,11 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 			minProcess->remainingTime -= 1;
 
 			std::cout << "Current Time: " << currentTime << ", Process: " << minProcess->processId << std::endl;
-			
+
+			if (schedulingOutput != NULL)
+			{
+				delete schedulingOutput;
+			}
 			schedulingOutput = new SchedulingOutput(currentTime, minProcess->processId, 0, 0);
 
 			if (minProcess->remainingTime <= 0)
@@ -108,6 +112,8 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 	std::cout << "Current Time: " << currentTime << std::endl;
 	for (long i = 0; i < 750000000; i++)
 		;
+
+	delete[n] processes;
 }
 
 #endif // !SCHEDULING_ALGORITHM_H_

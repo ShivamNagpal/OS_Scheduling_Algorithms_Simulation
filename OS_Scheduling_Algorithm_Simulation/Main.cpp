@@ -20,6 +20,8 @@ void init();
 void idleFunction();
 void renderCurrentOutput();
 void displayVisualSectionsAttribute();
+void cleanUpMemory();
+void cleanUpVisualSections();
 
 void init()
 {
@@ -105,10 +107,10 @@ void drawPartitions()
 	glPopAttrib();
 }
 
-void bitmapTextRendering(const char * text, int x, int y)
+void bitmap24TextRendering(const char * text, float color[], int x, int y)
 {
 	glPushAttrib(GL_COLOR);
-	glColor3f(1.0, 0.0, 0.0);
+	glColor3fv(color);
 	glRasterPos2f(x + 10, y - 34);
 
 	for (int i = 0; text[i] != '\0'; i++)
@@ -121,22 +123,24 @@ void bitmapTextRendering(const char * text, int x, int y)
 
 void drawLabels()
 {
-	bitmapTextRendering("Ready Queue", visualSections[2][0]->startX, visualSections[2][0]->startY + visualSections[2][0]->height);
-	bitmapTextRendering("Job Pool", visualSections[2][1]->startX, visualSections[2][1]->startY + visualSections[2][1]->height);
-	bitmapTextRendering("CPU", visualSections[1][0]->startX, visualSections[1][0]->startY + visualSections[1][0]->height);
-	bitmapTextRendering("Average", visualSections[1][1]->startX, visualSections[1][1]->startY + visualSections[1][1]->height);
-	bitmapTextRendering("Gantt Chart", visualSections[0][0]->startX, visualSections[0][0]->startY + visualSections[0][0]->height);
+	float color[] = { 1.0,0.0,0.0 };
+	bitmap24TextRendering("Ready Queue", color, visualSections[2][0]->startX, visualSections[2][0]->startY + visualSections[2][0]->height);
+	bitmap24TextRendering("Job Pool", color, visualSections[2][1]->startX, visualSections[2][1]->startY + visualSections[2][1]->height);
+	bitmap24TextRendering("CPU", color, visualSections[1][0]->startX, visualSections[1][0]->startY + visualSections[1][0]->height);
+	bitmap24TextRendering("Average", color, visualSections[1][1]->startX, visualSections[1][1]->startY + visualSections[1][1]->height);
+	bitmap24TextRendering("Gantt Chart", color, visualSections[0][0]->startX, visualSections[0][0]->startY + visualSections[0][0]->height);
 }
 
 void renderCurrentOutput()
 {
+	float color[] = { 0.0,0.0,0.0 };
 	while (!outputReady)
 		;
 	outputReady = false;
 	std::stringstream ss;
 	ss << schedulingOutput->processNumber;
 	printf("%d %s\n", schedulingOutput->processNumber, ss.str().c_str());
-	bitmapTextRendering(ss.str().c_str(), 400, 600);
+	bitmap24TextRendering(ss.str().c_str(), color, 400, 600);
 	outputTaken = true;
 }
 
@@ -156,9 +160,7 @@ int main()
 	glutMainLoop();
 	th1.join();
 
-	/*const int n = 4;
-	Process p[] = { Process(2,1,4), Process(1,0,8),  Process(3,2,9), Process(4,3,5) };
-	sjfPreemptive(p, 4);*/
+	cleanUpMemory();
 }
 
 void idleFunction()
@@ -168,4 +170,20 @@ void idleFunction()
 		glutPostRedisplay();
 		isReady = false;
 	}
+}
+
+void cleanUpVisualSections()
+{
+	for (int i = 0; i < rows; i++)
+	{
+		for (int j = 0; j < columns[i]; j++)
+		{
+			delete visualSections[i][j];
+		}
+	}
+}
+
+void cleanUpMemory()
+{
+	cleanUpVisualSections();
 }
