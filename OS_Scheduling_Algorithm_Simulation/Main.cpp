@@ -41,7 +41,7 @@ void drawAverageOutputLabels();
 void drawPartitions();
 void init();
 void idleFunction();
-void representProcess(int processNumber, float color[]);
+void representProcess(int processNumber, float color[], int *skipVariable, int maximumX);
 void setStartingPositionForProcessRepresentation(int x, int y);
 void renderCurrentOutput();
 void renderCurrentCPUOutput(int process, int currentTime);
@@ -241,20 +241,34 @@ void renderCurrentAverageOutput(float waitingAverage, float turnAroundTimeAverag
 void renderReadyQueue(std::list<int> *arrivedProcesses)
 {
 	setStartingPositionForProcessRepresentation(visualSections[2][0]->startX, visualSections[2][0]->startY + (visualSections[2][0]->height - 34) / 2);
+	int maxX = visualSections[2][0]->startX + visualSections[2][0]->width;
+	std::list<int>::iterator iterator = arrivedProcesses->begin();
 
-	for (std::list<int>::iterator iterator = arrivedProcesses->begin(); iterator != arrivedProcesses->end(); iterator++)
+	for (int i = 0; i < skipReadyQueueElements; i++)
 	{
-		representProcess(*iterator, processColors[(*iterator - 1) % 8]);
+		iterator++;
+	}
+
+	for (; iterator != arrivedProcesses->end(); iterator++)
+	{
+		representProcess(*iterator, processColors[(*iterator - 1) % 8], &skipReadyQueueElements, maxX);
 	}
 }
 
 void renderGanttChart()
 {
 	setStartingPositionForProcessRepresentation(visualSections[0][0]->startX, visualSections[0][0]->startY + (visualSections[0][0]->height - 34) / 2);
+	int maxX = visualSections[0][0]->startX + visualSections[0][0]->width;
+	std::list<int>::iterator iterator = ganttChart.begin();
 
-	for (std::list<int>::iterator iterator = ganttChart.begin(); iterator != ganttChart.end(); iterator++)
+	for (int i = 0; i < skipGanttChartElements; i++)
 	{
-		representProcess(*iterator, processColors[(*iterator - 1) % 8]);
+		iterator++;
+	}
+
+	for (; iterator != ganttChart.end(); iterator++)
+	{
+		representProcess(*iterator, processColors[(*iterator - 1) % 8], &skipGanttChartElements, maxX);
 	}
 }
 
@@ -264,7 +278,7 @@ void setStartingPositionForProcessRepresentation(int x, int y)
 	representRectangleY = y;
 }
 
-void representProcess(int processNumber, float color[])
+void representProcess(int processNumber, float color[], int *skipVariable, int maximumWidth)
 {
 	glPushAttrib(GL_LINE_WIDTH);
 	glPushAttrib(GL_COLOR);
@@ -298,6 +312,11 @@ void representProcess(int processNumber, float color[])
 	representRectangleX += REPRESENT_RECTANGLE_WIDTH;
 	glPopAttrib();
 	glPopAttrib();
+
+	if (representRectangleX + REPRESENT_RECTANGLE_SEPARATION + REPRESENT_RECTANGLE_WIDTH >= maximumWidth)
+	{
+		(*skipVariable)++;
+	}
 }
 
 int main()
