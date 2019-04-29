@@ -10,6 +10,10 @@
 #include <thread>
 #include <glut.h>
 
+const int n = 4;
+Process processes[] = { Process(2,1,4), Process(1,0,8),  Process(3,2,9), Process(4,3,5) };
+int jobPoolCursor = 0;
+
 const int HEIGHT = 500, WIDTH = 1000;
 const float VIEWPORT_SCALING_FACTOR = 1.5f;
 const int rows = 3;
@@ -39,6 +43,7 @@ void drawVisualSectionLabels();
 void drawOutputLabels();
 void drawCPUOutputLabels();
 void drawAverageOutputLabels();
+void drawJobPool();
 void drawPartitions();
 void init();
 void idleFunction();
@@ -84,6 +89,7 @@ void display()
 	drawPartitions();
 	drawVisualSectionLabels();
 	drawOutputLabels();
+	drawJobPool();
 	renderCurrentOutput();
 	glutSwapBuffers();
 }
@@ -189,6 +195,51 @@ void drawAverageOutputLabels()
 	bitmapTextRendering("Average Turn Around Time", outputLabelFont, outputLabelColor, xCurrent, y);
 }
 
+void drawJobPool()
+{
+	int x = visualSections[2][1]->startX + 20;
+	int yCurrent = visualSections[2][1]->startY + visualSections[2][1]->height - 68;
+
+	int xShift = visualSections[2][1]->width / 3;
+	int xCurrent = x;
+	int yShift = -24;
+
+	bitmapTextRendering("Process Id", outputLabelFont, outputLabelColor, xCurrent, yCurrent);
+	xCurrent += xShift;
+	bitmapTextRendering("Burst Time", outputLabelFont, outputLabelColor, xCurrent, yCurrent);
+	xCurrent += xShift;
+	bitmapTextRendering("Arrival Time", outputLabelFont, outputLabelColor, xCurrent, yCurrent);
+
+	yCurrent = yCurrent + yShift - 10;
+
+	std::stringstream ss;
+	int cursor;
+	for (int i = 0; i < 3; i++)
+	{
+		cursor = (jobPoolCursor + i) % n;
+		xCurrent = x;
+
+		ss.str("");
+		ss << processes[cursor].processId;
+		bitmapTextRendering(ss.str().c_str(), outputLabelFont, outputLabelColor, xCurrent, yCurrent);
+		xCurrent += xShift;
+
+		ss.str("");
+		ss << processes[cursor].burstTime;
+		bitmapTextRendering(ss.str().c_str(), outputLabelFont, outputLabelColor, xCurrent, yCurrent);
+		xCurrent += xShift;
+
+		ss.str("");
+		ss << processes[cursor].arrivalTime;
+		bitmapTextRendering(ss.str().c_str(), outputLabelFont, outputLabelColor, xCurrent, yCurrent);
+		xCurrent += xShift;
+
+		yCurrent += yShift;
+	}
+	jobPoolCursor = (jobPoolCursor + 1) % n;
+
+}
+
 void renderCurrentOutput()
 {
 	float color[] = { 0.0,0.0,0.0 };
@@ -215,10 +266,22 @@ void renderCurrentCPUOutput(int process, int currentTime)
 	std::stringstream ss;
 	ss << "Job " << process;
 	bitmapTextRendering(ss.str().c_str(), outputFont, outputColor, xCurrent, y);
-	ss.str("");
 
+	ss.str("");
 	xCurrent += xShift;
 	ss << currentTime << " -> " << (currentTime + 1);
+	bitmapTextRendering(ss.str().c_str(), outputFont, outputColor, xCurrent, y);
+
+	ss.str("");
+	xCurrent += xShift;
+	if (process != -1)
+	{
+		ss << "100%";
+	}
+	else
+	{
+		ss << "0%";
+	}
 	bitmapTextRendering(ss.str().c_str(), outputFont, outputColor, xCurrent, y);
 }
 
@@ -329,8 +392,6 @@ int main()
 	glutDisplayFunc(display);
 	glutIdleFunc(idleFunction);
 
-	const int n = 4;
-	Process p[] = { Process(2,1,4), Process(1,0,8),  Process(3,2,9), Process(4,3,5) };
 	int tempN = n;
 	int multiplier = 0;
 	while (tempN != 0)
@@ -342,7 +403,7 @@ int main()
 	REPRESENT_RECTANGLE_WIDTH *= multiplier;
 	REPRESENT_RECTANGLE_SEPARATION *= multiplier;
 
-	std::thread th1(sjfPreemptive, p, n);
+	std::thread th1(sjfPreemptive, processes, n);
 	printf("Did I reach\n");
 	glutMainLoop();
 	//th1.join();
