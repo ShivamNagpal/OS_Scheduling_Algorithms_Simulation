@@ -141,7 +141,7 @@ void bitmapTextRendering(const char * text, void *font, float color[], int x, in
 {
 	glPushAttrib(GL_COLOR);
 	glColor3fv(color);
-	glRasterPos2f(x + 10, y - 34);
+	glRasterPos2f(x, y);
 
 	for (int i = 0; text[i] != '\0'; i++)
 	{
@@ -153,11 +153,11 @@ void bitmapTextRendering(const char * text, void *font, float color[], int x, in
 
 void drawVisualSectionLabels()
 {
-	bitmapTextRendering("Ready Queue", visualSectionLabelFont, visualSectionLabelColor, visualSections[2][0]->startX, visualSections[2][0]->startY + visualSections[2][0]->height);
-	bitmapTextRendering("Job Pool", visualSectionLabelFont, visualSectionLabelColor, visualSections[2][1]->startX, visualSections[2][1]->startY + visualSections[2][1]->height);
-	bitmapTextRendering("CPU", visualSectionLabelFont, visualSectionLabelColor, visualSections[1][0]->startX, visualSections[1][0]->startY + visualSections[1][0]->height);
-	bitmapTextRendering("Average", visualSectionLabelFont, visualSectionLabelColor, visualSections[1][1]->startX, visualSections[1][1]->startY + visualSections[1][1]->height);
-	bitmapTextRendering("Gantt Chart", visualSectionLabelFont, visualSectionLabelColor, visualSections[0][0]->startX, visualSections[0][0]->startY + visualSections[0][0]->height);
+	bitmapTextRendering("Ready Queue", visualSectionLabelFont, visualSectionLabelColor, visualSections[2][0]->startX + 10, visualSections[2][0]->startY + visualSections[2][0]->height - 34);
+	bitmapTextRendering("Job Pool", visualSectionLabelFont, visualSectionLabelColor, visualSections[2][1]->startX + 10, visualSections[2][1]->startY + visualSections[2][1]->height - 34);
+	bitmapTextRendering("CPU", visualSectionLabelFont, visualSectionLabelColor, visualSections[1][0]->startX + 10, visualSections[1][0]->startY + visualSections[1][0]->height - 34);
+	bitmapTextRendering("Average", visualSectionLabelFont, visualSectionLabelColor, visualSections[1][1]->startX + 10, visualSections[1][1]->startY + visualSections[1][1]->height - 34);
+	bitmapTextRendering("Gantt Chart", visualSectionLabelFont, visualSectionLabelColor, visualSections[0][0]->startX + 10, visualSections[0][0]->startY + visualSections[0][0]->height - 34);
 }
 
 void drawOutputLabels()
@@ -168,9 +168,9 @@ void drawOutputLabels()
 
 void drawCPUOutputLabels()
 {
-	int y = visualSections[1][0]->startY + visualSections[1][0]->height - 34;
+	int y = visualSections[1][0]->startY + visualSections[1][0]->height - 68;
 	int xShift = visualSections[1][0]->width / 3;
-	int xCurrent = visualSections[1][0]->startX + 10;
+	int xCurrent = visualSections[1][0]->startX + 20;
 	bitmapTextRendering("Current Job", outputLabelFont, outputLabelColor, xCurrent, y);
 	xCurrent += xShift;
 	bitmapTextRendering("Current Time", outputLabelFont, outputLabelColor, xCurrent, y);
@@ -180,9 +180,9 @@ void drawCPUOutputLabels()
 
 void drawAverageOutputLabels()
 {
-	int y = visualSections[1][1]->startY + visualSections[1][1]->height - 34;
+	int y = visualSections[1][1]->startY + visualSections[1][1]->height - 68;
 	int xShift = visualSections[1][1]->width / 2;
-	int xCurrent = visualSections[1][1]->startX + 10;
+	int xCurrent = visualSections[1][1]->startX + 20;
 	bitmapTextRendering("Average Waiting Time", outputLabelFont, outputLabelColor, xCurrent, y);
 	xCurrent += xShift;
 	bitmapTextRendering("Average Turn Around Time", outputLabelFont, outputLabelColor, xCurrent, y);
@@ -209,8 +209,8 @@ void renderCurrentOutput()
 void renderCurrentCPUOutput(int process, int currentTime)
 {
 	int xShift = visualSections[1][0]->width / 3;
-	int xCurrent = visualSections[1][0]->startX + 10;
-	int y = visualSections[1][0]->startY + visualSections[1][0]->height - 68;
+	int xCurrent = visualSections[1][0]->startX + 20;
+	int y = visualSections[1][0]->startY + visualSections[1][0]->height - 102;
 	std::stringstream ss;
 	ss << "Job " << process;
 	bitmapTextRendering(ss.str().c_str(), outputFont, outputColor, xCurrent, y);
@@ -223,9 +223,9 @@ void renderCurrentCPUOutput(int process, int currentTime)
 
 void renderCurrentAverageOutput(float waitingAverage, float turnAroundTimeAverage)
 {
-	int y = visualSections[1][1]->startY + visualSections[1][1]->height - 68;
+	int y = visualSections[1][1]->startY + visualSections[1][1]->height - 102;
 	int xShift = visualSections[1][1]->width / 2;
-	int xCurrent = visualSections[1][1]->startX + 10;
+	int xCurrent = visualSections[1][1]->startX + 20;
 
 	std::stringstream ss;
 	ss.precision(2);
@@ -302,12 +302,11 @@ void representProcess(int processNumber, float color[], int *skipVariable, int m
 	glEnd();
 
 	glColor3f(0, 0, 0);
-	glRasterPos2f(representRectangleX + 10, representRectangleY);
 	std::stringstream ss;
 	ss << processNumber;
 	std::string s;
 	ss >> s;
-	bitmapTextRendering(s.c_str(), GLUT_BITMAP_TIMES_ROMAN_24, PROCESS_REPRESENTATION_TEXT_COLOR, representRectangleX + 10, representRectangleY);
+	bitmapTextRendering(s.c_str(), GLUT_BITMAP_TIMES_ROMAN_24, PROCESS_REPRESENTATION_TEXT_COLOR, representRectangleX + 20, representRectangleY - 34);
 
 	representRectangleX += REPRESENT_RECTANGLE_WIDTH;
 	glPopAttrib();
