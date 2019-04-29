@@ -11,23 +11,24 @@
 #include <glut.h>
 
 const int HEIGHT = 500, WIDTH = 1000;
+const float VIEWPORT_SCALING_FACTOR = 1.5f;
 const int rows = 3;
 int columns[] = { 1,2,2 };
 VisualSection *visualSections[rows][2];
 float visualSectionLabelColor[] = { 1.0,0.0,0.0 };
 void *visualSectionLabelFont = GLUT_BITMAP_TIMES_ROMAN_24;
 float outputLabelColor[] = { 0.0,0.0,0.0 };
-void *outputLabelFont = GLUT_BITMAP_TIMES_ROMAN_10;
+void *outputLabelFont = GLUT_BITMAP_9_BY_15;
 float outputColor[] = { 0.0,0.0,0.0 };
 void *outputFont = GLUT_BITMAP_TIMES_ROMAN_24;
-float processColors[][3] = { { 1,0,0 },{ 0,1,0 },{ 0,0,1 },{ 0.75,0.75,0 },{ 0,1,1 },{ 1,0,1 },{ 0.5,0.5,0.5 },{ 0.75,0.25,1 } };
+float processColors[][3] = { { 1,0,0 },{ 0.05,0.9,0.05 },{ 0,0,1 },{ 0.75,0.75,0 },{ 0,1,1 },{ 1,0,1 },{ 0.5,0.5,0.5 },{ 0.75,0.25,1 } };
 
 float PROCESS_REPRESENTATION_TEXT_COLOR[] = { 1.0,1.0,1.0 };
 
 int representRectangleX = 0, representRectangleY = 0;
-const int REPRESENT_RECTANGLE_SEPARATION = 20;
-const int REPRESENT_RECTANGLE_HEIGHT = 100;
-const int REPRESENT_RECTANGLE_WIDTH = 50;
+int REPRESENT_RECTANGLE_SEPARATION = 5;
+const int REPRESENT_RECTANGLE_HEIGHT = 80;
+int REPRESENT_RECTANGLE_WIDTH = 20;
 
 std::list<int> ganttChart;
 
@@ -303,10 +304,11 @@ void representProcess(int processNumber, float color[], int *skipVariable, int m
 
 	glColor3f(0, 0, 0);
 	std::stringstream ss;
+
 	ss << processNumber;
 	std::string s;
 	ss >> s;
-	bitmapTextRendering(s.c_str(), GLUT_BITMAP_TIMES_ROMAN_24, PROCESS_REPRESENTATION_TEXT_COLOR, representRectangleX + 20, representRectangleY - 34);
+	bitmapTextRendering(s.c_str(), GLUT_BITMAP_9_BY_15, PROCESS_REPRESENTATION_TEXT_COLOR, representRectangleX + REPRESENT_RECTANGLE_WIDTH / 2 - 5, representRectangleY - deltaY + 10);
 
 	representRectangleX += REPRESENT_RECTANGLE_WIDTH;
 	glPopAttrib();
@@ -321,7 +323,7 @@ void representProcess(int processNumber, float color[], int *skipVariable, int m
 int main()
 {
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
-	glutInitWindowSize(WIDTH, HEIGHT);
+	glutInitWindowSize(WIDTH * VIEWPORT_SCALING_FACTOR, HEIGHT * VIEWPORT_SCALING_FACTOR);
 	glutCreateWindow("Simulation");
 	init();
 	glutDisplayFunc(display);
@@ -329,6 +331,17 @@ int main()
 
 	const int n = 4;
 	Process p[] = { Process(2,1,4), Process(1,0,8),  Process(3,2,9), Process(4,3,5) };
+	int tempN = n;
+	int multiplier = 0;
+	while (tempN != 0)
+	{
+		multiplier++;
+		tempN /= 10;
+	}
+
+	REPRESENT_RECTANGLE_WIDTH *= multiplier;
+	REPRESENT_RECTANGLE_SEPARATION *= multiplier;
+
 	std::thread th1(sjfPreemptive, p, n);
 	printf("Did I reach\n");
 	glutMainLoop();
