@@ -243,19 +243,6 @@ void drawJobPool()
 
 void renderCurrentOutput()
 {
-	/*if (!isOver)
-	{
-		while (!outputReady)
-			;
-		outputReady = false;
-		ganttChart.push_back(schedulingOutput->processNumber);
-		renderCurrentCPUOutput(schedulingOutput->processNumber, schedulingOutput->currentTime);
-		renderReadyQueue(schedulingOutput->arrivedProcesses);
-	}
-	renderCurrentAverageOutput(schedulingOutput->averageWaitingTime, schedulingOutput->averageTurnAroundTime);
-	renderGanttChart();
-
-	outputTaken = true;*/
 
 	if (outputReady)
 	{
@@ -427,29 +414,11 @@ int main()
 	printf("Did I reach\n");
 	glutMainLoop();
 
-	/*std::thread th1(sjfPreemptive, processes, n);
-	while (true)
-	{
-		for (long i = 0; i < 7500000; i++)
-			;
-		if (outputReady)
-		{
-			outputReady = false;
-			outputTaken = true;
-		}
-	}*/
-
 	cleanUpMemory();
 }
 
 void idleFunction()
 {
-	/*if (isReady)
-	{
-		glutPostRedisplay();
-		isReady = false;
-	}*/
-
 	for (long i = 0; i < 200000000; i++)
 		;
 	glutPostRedisplay();
