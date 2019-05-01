@@ -30,6 +30,7 @@ float processColors[][3] = { { 1,0,0 },{ 0.05,0.9,0.05 },{ 0,0,1 },{ 0.75,0.75,0
 float PROCESS_REPRESENTATION_TEXT_COLOR[] = { 1.0,1.0,1.0 };
 
 int representRectangleX = 0, representRectangleY = 0;
+SchedulingOutput *previousOutput = NULL;
 int REPRESENT_RECTANGLE_SEPARATION = 5;
 const int REPRESENT_RECTANGLE_HEIGHT = 80;
 int REPRESENT_RECTANGLE_WIDTH = 20;
@@ -242,8 +243,7 @@ void drawJobPool()
 
 void renderCurrentOutput()
 {
-	float color[] = { 0.0,0.0,0.0 };
-	if (!isOver)
+	/*if (!isOver)
 	{
 		while (!outputReady)
 			;
@@ -255,7 +255,27 @@ void renderCurrentOutput()
 	renderCurrentAverageOutput(schedulingOutput->averageWaitingTime, schedulingOutput->averageTurnAroundTime);
 	renderGanttChart();
 
-	outputTaken = true;
+	outputTaken = true;*/
+
+	if (outputReady)
+	{
+
+		clearSchedulingOutput(&previousOutput);
+
+		previousOutput = new SchedulingOutput(*schedulingOutput);
+		ganttChart.push_back(previousOutput->processNumber);
+		outputReady = false;
+		outputTaken = true;
+	}
+
+	if (previousOutput != NULL)
+	{
+		renderCurrentCPUOutput(previousOutput->processNumber, previousOutput->currentTime);
+		renderReadyQueue(previousOutput->arrivedProcesses);
+		renderCurrentAverageOutput(previousOutput->averageWaitingTime, previousOutput->averageTurnAroundTime);
+	}
+
+	renderGanttChart();
 }
 
 void renderCurrentCPUOutput(int process, int currentTime)
@@ -308,7 +328,7 @@ void renderReadyQueue(std::list<int> *arrivedProcesses)
 	int maxX = visualSections[2][0]->startX + visualSections[2][0]->width;
 	std::list<int>::iterator iterator = arrivedProcesses->begin();
 
-	for (int i = 0; i < skipReadyQueueElements; i++)
+	for (int i = 0; i < skipReadyQueueElements && iterator != arrivedProcesses->end(); i++)
 	{
 		iterator++;
 	}
@@ -325,7 +345,7 @@ void renderGanttChart()
 	int maxX = visualSections[0][0]->startX + visualSections[0][0]->width;
 	std::list<int>::iterator iterator = ganttChart.begin();
 
-	for (int i = 0; i < skipGanttChartElements; i++)
+	for (int i = 0; i < skipGanttChartElements && iterator != ganttChart.end(); i++)
 	{
 		iterator++;
 	}
@@ -406,19 +426,33 @@ int main()
 	std::thread th1(sjfPreemptive, processes, n);
 	printf("Did I reach\n");
 	glutMainLoop();
-	//th1.join();
-	isOver = true;
+
+	/*std::thread th1(sjfPreemptive, processes, n);
+	while (true)
+	{
+		for (long i = 0; i < 7500000; i++)
+			;
+		if (outputReady)
+		{
+			outputReady = false;
+			outputTaken = true;
+		}
+	}*/
 
 	cleanUpMemory();
 }
 
 void idleFunction()
 {
-	if (isReady)
+	/*if (isReady)
 	{
 		glutPostRedisplay();
 		isReady = false;
-	}
+	}*/
+
+	for (long i = 0; i < 200000000; i++)
+		;
+	glutPostRedisplay();
 }
 
 void cleanUpVisualSections()
@@ -435,5 +469,6 @@ void cleanUpVisualSections()
 void cleanUpMemory()
 {
 	cleanUpVisualSections();
-	clearSchedulingOutput();
+	clearSchedulingOutput(&previousOutput);
+	clearSchedulingOutput(&schedulingOutput);
 }

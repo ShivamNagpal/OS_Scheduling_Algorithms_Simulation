@@ -17,23 +17,36 @@ struct SchedulingOutput
 		this->averageTurnAroundTime = averageTurnAroundTime;
 		arrivedProcesses = new std::list<int>();
 	}
+
+	SchedulingOutput(SchedulingOutput &output)
+	{
+		this->currentTime = output.currentTime;
+		this->processNumber = output.processNumber;
+		this->averageWaitingTime = output.averageWaitingTime;
+		this->averageTurnAroundTime = output.averageTurnAroundTime;
+		this->arrivedProcesses = new std::list<int>();
+		for (std::list<int>::iterator iterator = output.arrivedProcesses->begin(); iterator != output.arrivedProcesses->end(); iterator++)
+		{
+			(this->arrivedProcesses)->push_back(*iterator);
+		}
+	}
 };
 
 static SchedulingOutput *schedulingOutput = NULL;
-static volatile bool isReady = false;
 static volatile bool outputReady = false;
 static volatile bool outputTaken = true;
-static volatile bool isOver = false;
 
-static void clearSchedulingOutput()
+static void clearSchedulingOutput(SchedulingOutput **output)
 {
-	if (schedulingOutput != NULL)
+	if (*output != NULL)
 	{
-		if (schedulingOutput->arrivedProcesses != NULL)
+		if ((*output)->arrivedProcesses != NULL)
 		{
-			delete schedulingOutput->arrivedProcesses;
+			delete (*output)->arrivedProcesses;
+			(*output)->arrivedProcesses = NULL;
 		}
-		delete schedulingOutput;
+		delete (*output);
+		*output = NULL;
 	}
 }
 #endif // !SCHEDULING_OUTPUT_H_
