@@ -14,6 +14,13 @@ const int n = 4;
 Process processes[] = { Process(2,1,4), Process(1,0,8),  Process(3,2,9), Process(4,3,5) };
 int jobPoolCursor = 0;
 
+const int SCENE_INTRO = 0;
+const int SCENE_ALGORITHMS = 1;
+const int SCENE_SIMULATION = 2;
+int currentScene = SCENE_INTRO;
+
+const int ALGORITHM_SJF_PREEMPTIVE = '3';
+
 const int HEIGHT = 500, WIDTH = 1000;
 const float VIEWPORT_SCALING_FACTOR = 1.5f;
 const int rows = 3;
@@ -25,7 +32,7 @@ float outputLabelColor[] = { 0.0,0.0,0.0 };
 void *outputLabelFont = GLUT_BITMAP_9_BY_15;
 float outputColor[] = { 0.0,0.0,0.0 };
 void *outputFont = GLUT_BITMAP_TIMES_ROMAN_24;
-float processColors[][3] = { { 1,0,0 },{ 0.05,0.9,0.05 },{ 0,0,1 },{ 0.75,0.75,0 },{ 0,1,1 },{ 1,0,1 },{ 0.5,0.5,0.5 },{ 0.75,0.25,1 } };
+float processColors[][3] = { { 1,0,0 },{ 0.05f,0.9f,0.05f },{ 0,0,1 },{ 0.75f,0.75f,0 },{ 0,1,1 },{ 1,0,1 },{ 0.5f,0.5f,0.5f },{ 0.75f,0.25f,1 } };
 
 float PROCESS_REPRESENTATION_TEXT_COLOR[] = { 1.0,1.0,1.0 };
 
@@ -37,9 +44,15 @@ int REPRESENT_RECTANGLE_WIDTH = 20;
 
 std::list<int> ganttChart;
 
+std::thread *simulationThread = NULL;
+
 int skipReadyQueueElements = 0;
 int skipGanttChartElements = 0;
 
+void bitmapTextRendering(const char * text, void *font, float color[], int x, int y);
+void displayAlgorithmsScene();
+void displayIntroScene();
+void displaySimulationScene();
 void drawVisualSectionLabels();
 void drawOutputLabels();
 void drawCPUOutputLabels();
@@ -48,6 +61,7 @@ void drawJobPool();
 void drawPartitions();
 void init();
 void idleFunction();
+void keyboardFunction(unsigned char key, int x, int y);
 void representProcess(int processNumber, float color[], int *skipVariable, int maximumX);
 void setStartingPositionForProcessRepresentation(int x, int y);
 void renderCurrentOutput();
@@ -58,6 +72,7 @@ void renderGanttChart();
 void displayVisualSectionsAttribute();
 void cleanUpMemory();
 void cleanUpVisualSections();
+void cleanSimulationThread();
 
 void init()
 {
@@ -82,7 +97,25 @@ void displayVisualSectionsAttribute()
 	printf("End\n");
 }
 
-void display()
+void displayIntroScene()
+{
+	glClearColor(1, 1, 1, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+	float color[] = { 0,0,0 };
+	bitmapTextRendering("Intro", GLUT_BITMAP_TIMES_ROMAN_24, color, 200, 200);
+	glutSwapBuffers();
+}
+
+void displayAlgorithmsScene()
+{
+	glClearColor(1, 1, 1, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+	float color[] = { 0,0,0 };
+	bitmapTextRendering("Algorithm", GLUT_BITMAP_TIMES_ROMAN_24, color, 200, 200);
+	glutSwapBuffers();
+}
+
+void displaySimulationScene()
 {
 	glClearColor(1, 1, 1, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -390,13 +423,43 @@ void representProcess(int processNumber, float color[], int *skipVariable, int m
 	}
 }
 
+void keyboardFunction(unsigned char key, int x, int y)
+{
+	switch (currentScene)
+	{
+	case SCENE_INTRO:
+		switch (key)
+		{
+		case 's':
+		case 'S':
+			glutDisplayFunc(displayAlgorithmsScene);
+			currentScene = SCENE_ALGORITHMS;
+			break;
+		}
+		break;
+	case SCENE_ALGORITHMS:
+		cleanSimulationThread();
+		switch (key)
+		{
+		case ALGORITHM_SJF_PREEMPTIVE:
+			simulationThread = new std::thread(sjfPreemptive, processes, n);
+			glutDisplayFunc(displaySimulationScene);
+			currentScene = SCENE_SIMULATION;
+		}
+		break;
+	case SCENE_SIMULATION:
+		break;
+	}
+}
+
 int main()
 {
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 	glutInitWindowSize(WIDTH * VIEWPORT_SCALING_FACTOR, HEIGHT * VIEWPORT_SCALING_FACTOR);
 	glutCreateWindow("Simulation");
 	init();
-	glutDisplayFunc(display);
+	glutDisplayFunc(displayIntroScene);
+	glutKeyboardFunc(keyboardFunction);
 	glutIdleFunc(idleFunction);
 
 	int tempN = n;
@@ -410,7 +473,7 @@ int main()
 	REPRESENT_RECTANGLE_WIDTH *= multiplier;
 	REPRESENT_RECTANGLE_SEPARATION *= multiplier;
 
-	std::thread th1(sjfPreemptive, processes, n);
+	/*std::thread th1(sjfPreemptive, processes, n);*/
 	printf("Did I reach\n");
 	glutMainLoop();
 
@@ -419,9 +482,17 @@ int main()
 
 void idleFunction()
 {
-	for (long i = 0; i < 200000000; i++)
-		;
-	glutPostRedisplay();
+	switch (currentScene)
+	{
+	case SCENE_SIMULATION:
+		for (long i = 0; i < 200000000; i++)
+			;
+		glutPostRedisplay();
+		break;
+	default:
+		glutPostRedisplay();
+		break;
+	}
 }
 
 void cleanUpVisualSections()
@@ -435,9 +506,20 @@ void cleanUpVisualSections()
 	}
 }
 
+void cleanSimulationThread()
+{
+	if (simulationThread != NULL)
+	{
+		simulationThread->~thread();
+		delete simulationThread;
+		simulationThread = NULL;
+	}
+}
+
 void cleanUpMemory()
 {
 	cleanUpVisualSections();
 	clearSchedulingOutput(&previousOutput);
 	clearSchedulingOutput(&schedulingOutput);
+	cleanSimulationThread();
 }
