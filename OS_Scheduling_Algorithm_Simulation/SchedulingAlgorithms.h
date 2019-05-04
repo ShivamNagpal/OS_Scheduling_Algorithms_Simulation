@@ -69,7 +69,7 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 
 		averageWaitingTime = 0;
 		averageTurnAroundTime = 0;
-		for (int i=0; i<n; ++i)
+		for (int i = 0; i < n; ++i)
 		{
 			averageWaitingTime += processes[i].waitingTime;
 			averageTurnAroundTime += processes[i].burstTime + processes[i].waitingTime;
@@ -135,7 +135,106 @@ static void fcfs(Process inputProcesses[], const int n)
 	}
 
 	std::sort(processes, processes + n, ProcessComparator::sortFcfsComparator);
-	// TODO Complete
+
+	std::set<int> arrivalTimes;
+	for (int i = 0; i < n; i++)
+	{
+		arrivalTimes.insert(processes[i].arrivalTime);
+	}
+	std::list<Process *> arrivedProcesses;
+
+	int processCursor = 0, currentTime = 0;
+	float averageWaitingTime = 0, averageTurnAroundTime = 0;
+	Process *currentProcess = NULL;
+
+	while (true)
+	{
+		clearSchedulingOutput(&schedulingOutput);
+
+		if (arrivalTimes.find(currentTime) != arrivalTimes.end())
+		{
+			while (processCursor < n && processes[processCursor].arrivalTime <= currentTime)
+			{
+				arrivedProcesses.push_back(&processes[processCursor]);
+				processCursor += 1;
+			}
+		}
+
+		std::list<Process *>::iterator iterator = arrivedProcesses.begin();
+		if (iterator != arrivedProcesses.end())
+		{
+			currentProcess = *iterator;
+		}
+		else
+		{
+			currentProcess = NULL;
+		}
+
+		for (std::list<Process *>::iterator iterator = arrivedProcesses.begin(); iterator != arrivedProcesses.end(); ++iterator)
+		{
+			if (*iterator == currentProcess)
+			{
+				continue;
+			}
+			(*iterator)->waitingTime += 1;
+		}
+
+		averageWaitingTime = 0;
+		averageTurnAroundTime = 0;
+		for (int i = 0; i < n; ++i)
+		{
+			averageWaitingTime += processes[i].waitingTime;
+			averageTurnAroundTime += processes[i].burstTime + processes[i].waitingTime;
+		}
+		averageWaitingTime /= n;
+		averageTurnAroundTime /= n;
+
+		if (currentProcess != NULL)
+		{
+			currentProcess->remainingTime -= 1;
+
+			std::cout << "Current Time: " << currentTime << ", Process: " << currentProcess->processId << std::endl;
+
+			schedulingOutput = new SchedulingOutput(currentTime, currentProcess->processId, averageWaitingTime, averageTurnAroundTime);
+
+			if (currentProcess->remainingTime <= 0)
+			{
+				arrivedProcesses.remove(currentProcess);
+				currentProcess = NULL;
+			}
+
+			for (std::list<Process *>::iterator iterator = arrivedProcesses.begin(); iterator != arrivedProcesses.end(); ++iterator)
+			{
+				(schedulingOutput->arrivedProcesses)->push_back((*iterator)->processId);
+			}
+			outputReady = true;
+			outputTaken = false;
+
+		}
+		else
+		{
+			// Return -1 for process Number;
+		}
+		printf("I'm Waiting\n");
+		for (long i = 0; i < 750000000; i++)
+			;
+
+		while (!outputTaken)
+			;
+
+
+		currentTime += 1;
+
+		if (arrivedProcesses.size() == 0 && currentTime > processes[n - 1].arrivalTime)
+		{
+			printf("I'm Exiting\n");
+			break;
+		}
+	}
+	std::cout << "Current Time: " << currentTime << std::endl;
+	for (long i = 0; i < 750000000; i++)
+		;
+	delete[n] processes;
 }
 
 #endif // !SCHEDULING_ALGORITHM_H_
