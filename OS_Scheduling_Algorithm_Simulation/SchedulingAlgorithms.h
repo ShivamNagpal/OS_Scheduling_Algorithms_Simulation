@@ -23,7 +23,7 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 	{
 		arrivalTimes.insert(processes[i].arrivalTime);
 	}
-	std::list<Process> arrivedProcesses;
+	std::list<Process *> arrivedProcesses;
 
 	int processCursor = 0, currentTime = 0;
 	float averageWaitingTime = 0, averageTurnAroundTime = 0;
@@ -38,7 +38,7 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 		{
 			while (processCursor < n && processes[processCursor].arrivalTime <= currentTime)
 			{
-				arrivedProcesses.push_back(processes[processCursor]);
+				arrivedProcesses.push_back(&processes[processCursor]);
 				processCursor += 1;
 			}
 			checkForNextMinProcess = true;
@@ -47,32 +47,32 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 		if (checkForNextMinProcess)
 		{
 			int minRemainingTime = INT_MAX;
-			for (std::list<Process>::iterator iterator = arrivedProcesses.begin(); iterator != arrivedProcesses.end(); ++iterator)
+			for (std::list<Process *>::iterator iterator = arrivedProcesses.begin(); iterator != arrivedProcesses.end(); ++iterator)
 			{
-				if (iterator->remainingTime < minRemainingTime)
+				if ((*iterator)->remainingTime < minRemainingTime)
 				{
-					minProcess = &(iterator._Ptr->_Myval);
-					minRemainingTime = iterator->remainingTime;
+					minProcess = *iterator;
+					minRemainingTime = (*iterator)->remainingTime;
 				}
 			}
 			checkForNextMinProcess = false;
 		}
 
-		for (std::list<Process>::iterator iterator = arrivedProcesses.begin(); iterator != arrivedProcesses.end(); ++iterator)
+		for (std::list<Process *>::iterator iterator = arrivedProcesses.begin(); iterator != arrivedProcesses.end(); ++iterator)
 		{
-			if (&(iterator._Ptr->_Myval) == minProcess)
+			if (*iterator == minProcess)
 			{
 				continue;
 			}
-			iterator->waitingTime += 1;
+			(*iterator)->waitingTime += 1;
 		}
 
 		averageWaitingTime = 0;
 		averageTurnAroundTime = 0;
-		for (std::list<Process>::iterator iterator = arrivedProcesses.begin(); iterator != arrivedProcesses.end(); ++iterator)
+		for (int i=0; i<n; ++i)
 		{
-			averageWaitingTime += iterator->waitingTime;
-			averageTurnAroundTime += iterator->waitingTime + iterator->burstTime;
+			averageWaitingTime += processes[i].waitingTime;
+			averageTurnAroundTime += processes[i].burstTime + processes[i].waitingTime;
 		}
 		averageWaitingTime /= n;
 		averageTurnAroundTime /= n;
@@ -87,14 +87,14 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 
 			if (minProcess->remainingTime <= 0)
 			{
-				arrivedProcesses.remove(*minProcess);
+				arrivedProcesses.remove(minProcess);
 				checkForNextMinProcess = true;
 				minProcess = NULL;
 			}
 
-			for (std::list<Process>::iterator iterator = arrivedProcesses.begin(); iterator != arrivedProcesses.end(); ++iterator)
+			for (std::list<Process *>::iterator iterator = arrivedProcesses.begin(); iterator != arrivedProcesses.end(); ++iterator)
 			{
-				(schedulingOutput->arrivedProcesses)->push_back(iterator->processId);
+				(schedulingOutput->arrivedProcesses)->push_back((*iterator)->processId);
 			}
 			outputReady = true;
 			outputTaken = false;
@@ -124,6 +124,18 @@ static void sjfPreemptive(Process inputProcesses[], const int n)
 	for (long i = 0; i < 750000000; i++)
 		;
 	delete[n] processes;
+}
+
+static void fcfs(Process inputProcesses[], const int n)
+{
+	Process *processes = new Process[n];
+	for (int i = 0; i < n; i++)
+	{
+		processes[i] = inputProcesses[i];
+	}
+
+	std::sort(processes, processes + n, ProcessComparator::sortFcfsComparator);
+	// TODO Complete
 }
 
 #endif // !SCHEDULING_ALGORITHM_H_

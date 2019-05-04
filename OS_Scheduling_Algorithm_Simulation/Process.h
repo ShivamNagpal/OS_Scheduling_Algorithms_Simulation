@@ -32,6 +32,11 @@ namespace ProcessComparator
 		}
 		return p1.arrivalTime <= p2.arrivalTime;
 	}
+
+	static bool sortFcfsComparator(const Process &p1, const Process &p2)
+	{
+		return p1.arrivalTime <= p2.arrivalTime;
+	}
 }
 #endif // !PROCESS_H_
 
