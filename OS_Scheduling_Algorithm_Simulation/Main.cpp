@@ -21,6 +21,7 @@ int currentScene = SCENE_INTRO;
 
 const int ALGORITHM_FCFS = '1';
 const int ALGORITHM_SJF_PREEMPTIVE = '2';
+const int ALGORITHM_ROUND_ROBIN_PREEMPTIVE = '3';
 
 const int HEIGHT = 500, WIDTH = 1000;
 const float VIEWPORT_SCALING_FACTOR = 1.5f;
@@ -449,6 +450,11 @@ void keyboardFunction(unsigned char key, int x, int y)
 			break;
 		case ALGORITHM_SJF_PREEMPTIVE:
 			simulationThread = new std::thread(sjfPreemptive, processes, n);
+			glutDisplayFunc(displaySimulationScene);
+			currentScene = SCENE_SIMULATION;
+			break;
+		case ALGORITHM_ROUND_ROBIN_PREEMPTIVE:
+			simulationThread = new std::thread(roundRobinPreemptive, processes, n);
 			glutDisplayFunc(displaySimulationScene);
 			currentScene = SCENE_SIMULATION;
 			break;
