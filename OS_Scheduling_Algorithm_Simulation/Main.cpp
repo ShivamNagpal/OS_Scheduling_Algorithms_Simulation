@@ -51,7 +51,7 @@ std::thread *simulationThread = NULL;
 int skipReadyQueueElements = 0;
 int skipGanttChartElements = 0;
 
-void bitmapTextRendering(const char * text, void *font, float color[], int x, int y);
+void bitmapTextRendering(const char * text, void *font, float color[], int x, int y, bool center = false, int xWidth = 1);
 void displayAlgorithmsScene();
 void displayIntroScene();
 void displaySimulationScene();
@@ -104,7 +104,14 @@ void displayIntroScene()
 	glClearColor(1, 1, 1, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 	float color[] = { 0,0,0 };
-	bitmapTextRendering("Intro", GLUT_BITMAP_TIMES_ROMAN_24, color, 200, 200);
+	int y = HEIGHT - 32;
+	bitmapTextRendering("R.N.S. INSTITUTE OF TECHNOLOGY", GLUT_BITMAP_TIMES_ROMAN_24, color, WIDTH / 2, y, true, 12);
+	y -= 200;
+	bitmapTextRendering("Project On", GLUT_BITMAP_TIMES_ROMAN_24, color, WIDTH / 2, y, true, 12);
+	y -= 24;
+	bitmapTextRendering("SIMULATION OF SCHEDULING ALGORITHMS", GLUT_BITMAP_TIMES_ROMAN_24, color, WIDTH / 2, y, true, 12);
+	y -= 200;
+	bitmapTextRendering("Press 's' to Start", GLUT_BITMAP_TIMES_ROMAN_24, color, WIDTH / 2, y, true, 12);
 	glutSwapBuffers();
 }
 
@@ -112,8 +119,16 @@ void displayAlgorithmsScene()
 {
 	glClearColor(1, 1, 1, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
+	int y = HEIGHT - 32;
 	float color[] = { 0,0,0 };
-	bitmapTextRendering("Algorithm", GLUT_BITMAP_TIMES_ROMAN_24, color, 200, 200);
+	bitmapTextRendering("ALGORITHMS", GLUT_BITMAP_TIMES_ROMAN_24, color, WIDTH/2, y, true, 12);
+	y -= 100;
+	bitmapTextRendering("1. First Come First Serve", GLUT_BITMAP_TIMES_ROMAN_24, color, 50, y);
+	y -= 50;
+	bitmapTextRendering("2. Shortest Job First Pre-emptive", GLUT_BITMAP_TIMES_ROMAN_24, color, 50, y);
+	y -= 50;
+	bitmapTextRendering("3. Round Robin Pre-emptive", GLUT_BITMAP_TIMES_ROMAN_24, color, 50, y);
+	y -= 50;
 	glutSwapBuffers();
 }
 
@@ -180,8 +195,14 @@ void drawPartitions()
 	glPopAttrib();
 }
 
-void bitmapTextRendering(const char * text, void *font, float color[], int x, int y)
+void bitmapTextRendering(const char * text, void *font, float color[], int x, int y, bool center, int xWidth)
 {
+	if (center)
+	{
+		int offset = (strlen(text) + 1) / 2;
+		x -= offset * xWidth;
+	}
+
 	glPushAttrib(GL_COLOR);
 	glColor3fv(color);
 	glRasterPos2f(x, y);

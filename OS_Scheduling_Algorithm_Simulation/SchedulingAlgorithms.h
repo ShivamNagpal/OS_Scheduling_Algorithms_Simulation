@@ -239,6 +239,7 @@ static void fcfs(Process inputProcesses[], const int n)
 
 static void roundRobinPreemptive(Process inputProcesses[], const int n)
 {
+	//TODO: FIX SEQUENCING, USE FLAGS (NEXT PROCESS) AND FLATTEN INNER LOOP
 	Process *processes = new Process[n];
 	int quantumSize = 2;
 	for (int i = 0; i < n; i++)
