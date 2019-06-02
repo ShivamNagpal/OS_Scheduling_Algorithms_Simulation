@@ -298,6 +298,15 @@ static void roundRobinPreemptive(Process inputProcesses[], const int n)
 
 			for (int i = 0; i < executionTime; ++i)
 			{
+				if (arrivalTimes.find(currentTime + i) != arrivalTimes.end())
+				{
+					while (processCursor < n && processes[processCursor].arrivalTime <= currentTime + i)
+					{
+						arrivedProcesses.push_back(&processes[processCursor]);
+						processCursor += 1;
+					}
+				}
+
 				for (std::list<Process *>::iterator iterator = arrivedProcesses.begin(); iterator != arrivedProcesses.end(); ++iterator)
 				{
 					if (*iterator == currentProcess)
