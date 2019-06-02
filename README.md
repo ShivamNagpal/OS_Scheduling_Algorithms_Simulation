@@ -7,4 +7,4 @@
 <p align="center"><img src="./md_assets/screenshot_sjf.png" width=800px></p>
 
 * **Round Robin Preemptive**
-<p align="center"><img src="./md_assets/screenshot_rr.PNG" width=800px></p>
+<p align="center"><img src="./md_assets/screenshot_rr.png" width=800px></p>
